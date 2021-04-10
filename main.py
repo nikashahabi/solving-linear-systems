@@ -1,7 +1,8 @@
 import numpy as np
-
+import time
 
 def iterativeMethods(A, M, b, stop):
+    # start = time.clock()
     'general iterative method to solve AX=b: M is the splitting matrix and is nonsingular. A = M-N.'
     'X(k+1) = Minverse * N * X(k) + Minverse * b'
     assert(A.shape[0] == A.shape[1] == M.shape[0] == M.shape[1])
@@ -18,14 +19,18 @@ def iterativeMethods(A, M, b, stop):
     Xnew = np.dot(MinverseDotN, X) + MinverseDotb
     i = 1
     while 1:
-        print("X approximation after", i, "iterations =")
+        print("X approximation after %d iterations =" %i)
         print(Xnew)
-        print("norm 2 of X", i, "- X", i - 1, " =")
+        print("norm 2 of X{i} - X{k} =".format(i=i, k=i-1))
         print(np.linalg.norm(X - Xnew))
         if np.linalg.norm(X-Xnew) <= stop:
             print("iterative method terminated")
             print("final approximation of X is =")
             print(Xnew)
+            # end = time.time()
+            # time = end - start
+            print("execution time =")
+            print(time)
             return Xnew
         X = np.ndarray.copy(Xnew)
         Xnew = np.dot(MinverseDotN, Xnew) + MinverseDotb
@@ -46,27 +51,152 @@ def getDEF(A):
 
 
 def Jacobi(A, b, stop):
-    print("jacobi's algorithm:")
+    print("jacobi's algorithm matrix implementation:")
     D,E,F = getDEF(A)
     M = D
     return iterativeMethods(A, M, b, stop)
 
 
+def JacobiV2(A, b, stop):
+    print("jacobi's algorithm:")
+    assert (A.shape[0] == A.shape[1])
+    n = A.shape[0]
+    X = np.zeros((n, 1))
+    Xtemp = np.zeros((n, 1))
+    Xnew = np.zeros((n, 1))
+    print("Initial approximation =")
+    print(X)
+    for i in range(n):
+        Xnew[i][0] = b[i][0]
+        for j in range(n):
+            if j != i:
+                Xnew[i][0] -= A[i][j] * X[j][0]
+        Xnew[i][0] *= 1 / A[i][i]
+    counter = 1
+    while 1:
+        print("X approximation after %d iterations =" % counter)
+        print(Xnew)
+        print("norm 2 of X{i} - X{k} =".format(i=counter, k=counter - 1))
+        print(np.linalg.norm(X - Xnew))
+        if np.linalg.norm(X - Xnew) <= stop:
+            print("iterative method terminated")
+            print("final approximation of X is =")
+            print(Xnew)
+            # end = time.time()
+            # time = end - start
+            print("execution time =")
+            print(time)
+            return Xnew
+        X = np.ndarray.copy(Xnew)
+        for i in range(n):
+            Xtemp[i][0] = b[i][0]
+            for j in range(n):
+                if j != i:
+                    Xtemp[i][0] -= A[i][j] * Xnew[j][0]
+            Xtemp[i][0] *= 1/A[i][i]
+        Xnew = np.ndarray.copy(Xtemp)
+        counter += 1
+
+
+
+
 def GaussSidel(A, b, stop):
-    print("Gauss-Sidel's algorithm:")
+    print("Gauss-Sidel's algorithm matrix implementation:")
     D, E, F = getDEF(A)
     M = D - E
     return iterativeMethods(A, M, b, stop)
 
 
+def GaussSidelV2(A, b, stop):
+    print("Gauss-Sidel's algorithm:")
+    assert (A.shape[0] == A.shape[1])
+    n = A.shape[0]
+    X = np.zeros((n, 1))
+    Xnew = np.ndarray.copy(X)
+    print("Initial approximation =")
+    print(X)
+    for i in range(n):
+        Xnew[i][0] = b[i][0]
+        for j in range(n):
+            if j != i:
+                Xnew[i][0] -= A[i][j] * Xnew[j][0]
+        Xnew[i][0] *= 1 / A[i][i]
+    counter = 1
+    while 1:
+        print("X approximation after %d iterations =" % counter)
+        print(Xnew)
+        print("norm 2 of X{i} - X{k} =".format(i=counter, k=counter - 1))
+        print(np.linalg.norm(X - Xnew))
+        if np.linalg.norm(X - Xnew) <= stop:
+            print("iterative method terminated")
+            print("final approximation of X is =")
+            print(Xnew)
+            # end = time.time()
+            # time = end - start
+            print("execution time =")
+            print(time)
+            return Xnew
+        X = np.ndarray.copy(Xnew)
+        for i in range(n):
+            Xnew[i][0] = b[i][0]
+            for j in range(n):
+                if j != i:
+                    Xnew[i][0] -= A[i][j] * Xnew[j][0]
+            Xnew[i][0] *= 1 / A[i][i]
+        counter += 1
+
+
 def SOR(A, b, stop, omega):
-    print("SOR algorithm with omega = :", omega)
+    print("SOR algorithm matrix implementation with omega = :", omega)
     D, E, F = getDEF(A)
     M = 1/omega * (D - E)
     return iterativeMethods(A, M, b, stop)
 
 
-def tridiagonal(a, b, c, n):
+def SORV2(A, b, stop, omega):
+    print("SOR algorithm:")
+    assert (A.shape[0] == A.shape[1])
+    n = A.shape[0]
+    X = np.zeros((n, 1))
+    Xnew = np.ndarray.copy(X)
+    print("Initial approximation =")
+    print(X)
+    for i in range(n):
+        temp = b[i][0]
+        for j in range(n):
+            if j != i:
+                temp -= A[i][j] * Xnew[j][0]
+        temp *= 1 / A[i][i]
+        delta = temp - Xnew[i][0]
+        Xnew[i][0] += omega * delta
+    counter = 1
+    while 1:
+        print("X approximation after %d iterations =" % counter)
+        print(Xnew)
+        print("norm 2 of X{i} - X{k} =".format(i=counter, k=counter - 1))
+        print(np.linalg.norm(X - Xnew))
+        if np.linalg.norm(X - Xnew) <= stop:
+            print("iterative method terminated")
+            print("final approximation of X is =")
+            print(Xnew)
+            # end = time.time()
+            # time = end - start
+            print("execution time =")
+            print(time)
+            return Xnew
+        X = np.ndarray.copy(Xnew)
+        for i in range(n):
+            temp = b[i][0]
+            for j in range(n):
+                if j != i:
+                    temp -= A[i][j] * Xnew[j][0]
+            temp *= 1 / A[i][i]
+            delta = temp - Xnew[i][0]
+            Xnew[i][0] += omega * delta
+        counter += 1
+
+
+def getTridiagonal(a, b, c, n):
     matrix = np.zeros((n, n))
     for i in range(n):
         matrix[i][i] = b
@@ -76,13 +206,119 @@ def tridiagonal(a, b, c, n):
             matrix[i+1][i] = c
     return(matrix)
 
-A = tridiagonal(-1, 4, -1, 4)
+
+def LUWithPivoting(A):
+    'saves the LU decomposition of A in A and the permutation in intch. flag is False if A is singular and PtLu decomposition does not exist'
+    assert(A.shape[0] == A.shape[1])
+    n = A.shape[0]
+    intch = np.zeros((n, 1))
+    flag = True
+    for k in range(n-1):
+        amax = abs(A[k][k])
+        amaxIndex = k
+        for i in range(k, n, 1):
+            if abs(A[i][k]) > abs(amax):
+                amax = abs(A[i][k])
+                amaxIndex = i
+        if (amax == 0):
+            flag = False
+            intch[k] = 0
+        else:
+            intch[k] = amaxIndex
+            if (amaxIndex != k):
+                A[[amaxIndex, k]] = A[[k, amaxIndex]]
+                print("pivoting")
+                # print(A)
+            for i in range(k+1, n, 1):
+                A[i][k] = A[i][k] / A[k][k]
+
+            for i in range(k+1, n, 1):
+                for x in range(k+1, n, 1):
+                    A[i][x] = A[i][x] - A[i][k] * A[k][x]
+            # print("A after first iteration")
+            # print(A)
+    if A[n-1][n-1] == 0:
+        flag = False
+        intch[n-1] = 0
+    else:
+        intch[n-1] = n-1
+    if flag is True:
+        print("A is nonsigular")
+    else:
+        print("A is singular")
+    print("LU decomposition of Ahat(Permutation * A)")
+    print(A)
+    print("Permutation")
+    print(intch)
+    return flag, intch
+
+
+def LUWithoutPivoting(A):
+    'saves the LU decomposition of A in A. flag is True if all of A leading principal submatrices are nonsingular and LU decomposition exists'
+    assert (A.shape[0] == A.shape[1])
+    n = A.shape[0]
+    flag = True
+    for k in range(n - 1):
+        for i in range(k + 1, n, 1):
+            if A[k][k] == 0:
+                flag = False
+                break
+            A[i][k] = A[i][k] / A[k][k]
+        if flag is False:
+            break
+        for i in range(k + 1, n, 1):
+            for x in range(k + 1, n, 1):
+                A[i][x] = A[i][x] - A[i][k] * A[k][x]
+    if A[n - 1][n - 1] == 0:
+        flag = False
+    if flag is False:
+        print("one of A's leading principal submatrices is singular and LU decoposition was not found")
+    else:
+        print("all of A's leading principal submatrices are nonsingular and LU decoposition was found")
+        print("LU decomposition of A")
+        print(A)
+    return flag
+
+
+def GaussianElimination(A, b):
+    assert (A.shape[0] == A.shape[1])
+    n = A.shape[0]
+    flag, intch = LUWithPivoting(A)
+    if flag is False:
+        print("A is singular and the linear system can not be solved")
+        return
+    for k in range(n-1):
+        m = intch[k]
+        temp = b[k]
+        b[k] = b[int(m)]
+        b[int(m)] = temp
+    print("b after permutation")
+    print(b)
+    for j in range(n-1):
+        for i in range(j+1, n, 1):
+            b[i] = b[i] - A[i][j] * b[j]
+    print("after solving Ly = b")
+    print(b)
+    for j in range(n-1, -1, -1):
+        assert(A[j][j] != 0)
+        b[j] = b[j] / A[j][j]
+        for i in range(j):
+            b[i] = b[i] - A[i][j] * b[j]
+    print("after solving Ux = y")
+    print(b)
+    return(b)
+
+
+
+A = getTridiagonal(-1, 16, -1, 4)
 b = np.ones((4, 1))
-X = Jacobi(A, b, 0.0001)
-
-
-
-
+time.sleep(1)
+LUWithoutPivoting(A)
+A = getTridiagonal(-1, 16, -1, 4)
+LUWithPivoting(A)
+# X1 = SOR(A, b, 0.0001, 0.9)
+# X2 = SORV2(A, b, 0.0001, 0.9)
+# X3 = GaussianElimination(A, b)
 
 
 
