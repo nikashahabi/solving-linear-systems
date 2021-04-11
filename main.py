@@ -2,7 +2,7 @@ import numpy as np
 import time
 
 def iterativeMethods(A, M, b, stop):
-    # start = time.clock()
+    # start = time.time()
     'general iterative method to solve AX=b: M is the splitting matrix and is nonsingular. A = M-N.'
     'X(k+1) = Minverse * N * X(k) + Minverse * b'
     assert(A.shape[0] == A.shape[1] == M.shape[0] == M.shape[1])
@@ -29,15 +29,16 @@ def iterativeMethods(A, M, b, stop):
             print(Xnew)
             # end = time.time()
             # time = end - start
-            print("execution time =")
-            print(time)
-            return Xnew
+            # print("execution time =")
+            # print(time)
+            return Xnew, i
         X = np.ndarray.copy(Xnew)
         Xnew = np.dot(MinverseDotN, Xnew) + MinverseDotb
         i += 1
 
 
 def getDEF(A):
+    'returns D, E and F. A = D - E - F'
     assert(A.shape[0] == A.shape[1])
     n = A.shape[0]
     D = np.zeros((n, n))
@@ -51,6 +52,7 @@ def getDEF(A):
 
 
 def Jacobi(A, b, stop):
+    'implements Jacobi algorithm with general iterative method'
     print("jacobi's algorithm matrix implementation:")
     D,E,F = getDEF(A)
     M = D
@@ -58,6 +60,7 @@ def Jacobi(A, b, stop):
 
 
 def JacobiV2(A, b, stop):
+    'jmplements jacobi algorithm'
     print("jacobi's algorithm:")
     assert (A.shape[0] == A.shape[1])
     n = A.shape[0]
@@ -84,9 +87,9 @@ def JacobiV2(A, b, stop):
             print(Xnew)
             # end = time.time()
             # time = end - start
-            print("execution time =")
-            print(time)
-            return Xnew
+            # print("execution time =")
+            # print(time)
+            return Xnew, counter
         X = np.ndarray.copy(Xnew)
         for i in range(n):
             Xtemp[i][0] = b[i][0]
@@ -101,6 +104,7 @@ def JacobiV2(A, b, stop):
 
 
 def GaussSidel(A, b, stop):
+    'implements GS algorithm with general iterative method'
     print("Gauss-Sidel's algorithm matrix implementation:")
     D, E, F = getDEF(A)
     M = D - E
@@ -108,6 +112,7 @@ def GaussSidel(A, b, stop):
 
 
 def GaussSidelV2(A, b, stop):
+    'implements GS algorithm'
     print("Gauss-Sidel's algorithm:")
     assert (A.shape[0] == A.shape[1])
     n = A.shape[0]
@@ -133,9 +138,9 @@ def GaussSidelV2(A, b, stop):
             print(Xnew)
             # end = time.time()
             # time = end - start
-            print("execution time =")
-            print(time)
-            return Xnew
+            # print("execution time =")
+            # print(time)
+            return Xnew, counter
         X = np.ndarray.copy(Xnew)
         for i in range(n):
             Xnew[i][0] = b[i][0]
@@ -147,6 +152,10 @@ def GaussSidelV2(A, b, stop):
 
 
 def SOR(A, b, stop, omega):
+    'implements SOR algorithm with general iterative method'
+    if omega <= 0 or omega >= 2:
+        print("SOR will not be convergent with this omega")
+        return
     print("SOR algorithm matrix implementation with omega = :", omega)
     D, E, F = getDEF(A)
     M = 1/omega * (D - E)
@@ -154,6 +163,10 @@ def SOR(A, b, stop, omega):
 
 
 def SORV2(A, b, stop, omega):
+    'implements SOR'
+    if omega <= 0 or omega >= 2:
+        print("SOR will not be convergent with this omega")
+        return
     print("SOR algorithm:")
     assert (A.shape[0] == A.shape[1])
     n = A.shape[0]
@@ -181,9 +194,9 @@ def SORV2(A, b, stop, omega):
             print(Xnew)
             # end = time.time()
             # time = end - start
-            print("execution time =")
-            print(time)
-            return Xnew
+            # print("execution time =")
+            # print(time)
+            return Xnew, counter
         X = np.ndarray.copy(Xnew)
         for i in range(n):
             temp = b[i][0]
@@ -197,6 +210,7 @@ def SORV2(A, b, stop, omega):
 
 
 def getTridiagonal(a, b, c, n):
+    'returns a tridiagonal  n*n matrix. bellow diagonal a, on diagonal b and above diagonal c'
     matrix = np.zeros((n, n))
     for i in range(n):
         matrix[i][i] = b
@@ -208,7 +222,9 @@ def getTridiagonal(a, b, c, n):
 
 
 def LUWithPivoting(A):
-    'saves the LU decomposition of A in A and the permutation in intch. flag is False if A is singular and PtLu decomposition does not exist'
+    'saves the LU decomposition of A in A and the permutation in intch'
+    'flag is False if A is singular and PtLu decomposition does not exist'
+    'returns flag and intch'
     assert(A.shape[0] == A.shape[1])
     n = A.shape[0]
     intch = np.zeros((n, 1))
@@ -254,7 +270,9 @@ def LUWithPivoting(A):
 
 
 def LUWithoutPivoting(A):
-    'saves the LU decomposition of A in A. flag is True if all of A leading principal submatrices are nonsingular and LU decomposition exists'
+    'saves the LU decomposition of A in A.'
+    'flag is True if all of A leading principal submatrices are nonsingular'
+    'and LU decomposition exists'
     assert (A.shape[0] == A.shape[1])
     n = A.shape[0]
     flag = True
@@ -281,6 +299,8 @@ def LUWithoutPivoting(A):
 
 
 def GaussianElimination(A, b):
+    'solves AX=b with Gaussian elimination. at the end of this method A holds the LU decomposition'
+    'and b is X. returns b'
     assert (A.shape[0] == A.shape[1])
     n = A.shape[0]
     flag, intch = LUWithPivoting(A)
@@ -306,19 +326,55 @@ def GaussianElimination(A, b):
             b[i] = b[i] - A[i][j] * b[j]
     print("after solving Ux = y")
     print(b)
-    return(b)
+    return b
 
 
+# A = getTridiagonal(-1, 4, -1, 4)
+# b = np.ones((4, 1))
+# iterations = []
+# times = []
+# stop = 0.0001
+#
+# start = time.time()
+# X, iteration = JacobiV2(A, b, stop)
+# end = time.time()
+# iterations.append(iteration)
+# times.append(end - start)
+# start = time.time()
+# X, iteration = GaussSidelV2(A, b, stop)
+# end = time.time()
+# iterations.append(iteration)
+# times.append(end - start)
+# start = time.time()
+# X, iteration = SORV2(A, b, stop, 1.1)
+# end = time.time()
+# iterations.append(iteration)
+# times.append(end - start)
+# print(iterations)
+# print(times)
 
-A = getTridiagonal(-1, 16, -1, 4)
-b = np.ones((4, 1))
-time.sleep(1)
-LUWithoutPivoting(A)
-A = getTridiagonal(-1, 16, -1, 4)
-LUWithPivoting(A)
-# X1 = SOR(A, b, 0.0001, 0.9)
-# X2 = SORV2(A, b, 0.0001, 0.9)
-# X3 = GaussianElimination(A, b)
+# counterList = []
+# A = getTridiagonal(-1, 4, -1, 4)
+# b = np.ones((4, 1))
+# i = 0.2
+# while i < 1.6:
+#     print(i)
+#     X, counter = SOR(A, b, 0.0001, i)
+#     counterList.append(counter)
+#     i += 2
+# X, counter1 = SOR(A, b, 0.0001, 0.9)
+# X, counter2 = SOR(A, b, 0.0001, 1.1)
+# print(counter1, counter2)
+# print(counterList)
+
+# A = getTridiagonal(-1, 4, -1, 16)
+# start = time.time()
+# LUWithoutPivoting(A)
+# end = time.time()
+# LUWithPivoting(A)
+# end2 = time.time()
+# print(end2 - end, end - start)
+
 
 
 
